@@ -3,7 +3,7 @@ const cors = require('cors');
 const morgan = require('morgan');
 const helmet = require('helmet');
 const supabase = require('./config/supabase');
-const authRoutes = require('./routes/authRoutes');
+const apiRoutes = require('./routes/api');
 
 
 const app = express();
@@ -13,24 +13,13 @@ app.use(helmet());
 app.use(morgan('dev'));
 app.use(express.json());
 
-app.use('/auth', authRoutes);
+app.use('/api', apiRoutes);
 
 app.get('/', (req, res) => {
-    const { data,error } = supabase.from('users').select('*');
-    if (error) {
-        console.log('❌ Error:', error.message);
-        res.json({
-            success: false,
-            message: 'Error: ' + error.message
-        })
-    } else {
-        console.log('Supabase Connected!');
-        console.log(data)
-        res.json({
-            success: true,
-            message: 'Supabase Connected'
-        })
-    }
+    res.json({
+        success: true,
+        message: 'Apis are working'
+    })
 })
 
 module.exports = app;

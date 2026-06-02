@@ -3,9 +3,9 @@ const router = express.Router();
 
 const AuthController = require('../controllers/AuthController');
 const isLoggedInMiddleware = require('../middlewares/isLoggedInMiddleware');
-// console.log(AuthController);
 
-router.post('/register',isLoggedInMiddleware, (req, res) => AuthController.register(req, res));
-router.post('/login',isLoggedInMiddleware, (req, res) => AuthController.login(req, res));
+router.use(isLoggedInMiddleware);
+router.post('/register', (req, res) => AuthController.register(req, res));
+router.post('/login', (req, res) => AuthController.login(req, res));
 
 module.exports = router;
