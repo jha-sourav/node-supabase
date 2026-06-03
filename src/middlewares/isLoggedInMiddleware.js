@@ -1,4 +1,5 @@
 const jwt = require('jsonwebtoken');
+const Response = require('../shared/utils/response');
 
 function isLoggedInMiddleware (req, res, next) {
     const token = req.headers.authorization?.split(' ')[1];
@@ -10,7 +11,7 @@ function isLoggedInMiddleware (req, res, next) {
     try{
         jwt.verify(token, process.env.JWT_SECRET);
 
-        return res.status(400).json({ error: "User already logged in" });
+        return  Response.error(res, { message: "User already logged in" });
 
     }catch (err) {
         next();

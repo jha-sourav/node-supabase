@@ -1,6 +1,6 @@
-const UserRepository = require('../repositories/UserRepository');
-const { createUserSchema } = require('../validations/user.validation');
-const { formatZodError, hashPassword } = require('../utils/helpers');
+const UserRepository = require('./user.repository');
+const { createUserSchema } = require('./user.validation');
+const { formatZodError, hashPassword } = require('../../shared/utils/helpers');
 
 class UserService {
     async getAll(){
@@ -18,11 +18,11 @@ class UserService {
         const result = createUserSchema.safeParse(data);
 
         if(!result.success){
-            return {
-                success: false,
-                error: formatZodError(result.error)
-            };
+            const error = new Error('Validation failed');
+            error.errors = formatZodError(result.error);
+            throw error;
         }
+
         const {name, email, password} = data;
         const exsisting = await UserRepository.findByEmail(email);
 
@@ -36,10 +36,7 @@ class UserService {
             name, email, password: hashedPassword
         });
         
-        return {
-                success: true,
-                data: user
-            };
+        return user;
     }
 
     async updateUser(id, data){
@@ -69,35 +66,22 @@ class UserService {
         }
 
         const user = await UserRepository.update(id, updateData);
-        return {
-            success: true,
-            data: user
-        } 
-
+        return user;
     }
 
     async deleteUser (id) {
         const user = await UserRepository.findById(id);
         if(!user.success){
-            return {
-                success: false,
-                error: 'User not found'
-            };
+            throw new Error('User not found');
         }
 
         if (!user) {
-            return {
-                success: false,
-                error: 'User not found'
-            };
+            throw new Error('User not found');
         }
 
         await UserRepository.delete(id);
 
-        return {
-            success: true,
-            message: 'User deleted successfully'
-        };
+        return true;
     }
 }
 

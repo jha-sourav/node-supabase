@@ -1,5 +1,5 @@
-const BaseRepository = require('./BaseRepository');
-const supabase = require('../config/supabase');
+const BaseRepository = require('../../shared/repositories/BaseRepository');
+const supabase = require('../../config/supabase');
 
 class UserRepository extends BaseRepository {
     constructor() {

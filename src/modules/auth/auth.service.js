@@ -1,17 +1,16 @@
 const bycrypt = require('bcrypt');
-const UserRepository = require('../repositories/UserRepository');
-const { createUserSchema, loginSchema } = require('../validations/user.validation');
-const { formatZodError, hashPassword, generateToken } = require('../utils/helpers');
+const UserRepository = require('../users/user.repository');
+const { createUserSchema, loginSchema } = require('../users/user.validation');
+const { formatZodError, hashPassword, generateToken } = require('../../shared/utils/helpers');
 
 class AuthService {
     async register(data) {
         const result = createUserSchema.safeParse(data);
 
         if(!result.success){
-            return {
-                success: false,
-                error: formatZodError(result.error)
-            };
+            const error = new Error('Validation failed');
+            error.errors = formatZodError(result.error);
+            throw error;
         }
         const {name, email, password} = data;
         const exsisting = await UserRepository.findByEmail(email);
@@ -26,20 +25,16 @@ class AuthService {
             name, email, password: hashedPassword
         });
         
-        return {
-                success: true,
-                data: user
-            };
+        return user;
     }
 
     async login(data) {
         const result = loginSchema.safeParse(data);
 
         if(!result.success){
-             return {
-                success: false,
-                error: formatZodError(result.error)
-            };
+            const error = new Error('Validation failed');
+            error.errors = formatZodError(result.error);
+            throw error;
         }
 
         const {email, password} = data;
@@ -58,7 +53,7 @@ class AuthService {
 
         const token = await generateToken({id: user.id, email:user.email});
 
-        return {  success: true, user, token };
+        return {  user, token };
     }
 }
 

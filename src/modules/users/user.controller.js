@@ -1,15 +1,15 @@
-const { success } = require('zod');
-const UserService = require('../services/UserService');
-const userResource = require('../resources/userResource');
+const UserService = require('./user.service');
+const userResource = require('./user.resource');
+const Response = require('../../shared/utils/response');
 
 class UserController {
     async getAll(req, res) {
         try {
             const users = await UserService.getAll();
             const usersData = users.data.map(userResource);
-            return res.status(200).json({ success: true, data: usersData });
+            return Response.success(res, usersData, 'Users fetched successfully'); 
         } catch (err) {
-            res.status(400).json({ error: err.message })
+            Response.error(res, err);
         }
     }
 
@@ -20,14 +20,14 @@ class UserController {
             const user = await UserService.getById(id);
 
             if (!user.data) {
-                return res.status(400).json({ error: "User not found" });
+                throw new Error("User not found");
             }
 
             const userData = userResource(user.data);
 
-            return res.status(200).json({ sucess: true, data: userData });
+            return Response.success(res, userData, 'User fetched successfully');
         } catch (err) {
-            res.status(400).json({ error: err.message });
+            Response.error(res, err);
         }
     }
 
@@ -37,16 +37,11 @@ class UserController {
                 throw new Error("Request body cannot be empty");
             }
             let user = await UserService.createUser(req.body);
-            let status = 201;
-            if (!user.success) {
-                status = 400;
-            }else{
-                user.data = userResource(user.data.data);
-            }
-            return res.status(status).json(user);
+
+            return Response.success(res, userResource(user.data), 'User saved successfully', 201);
 
         } catch (err) {
-            res.status(401).json({ error: err.message });
+            Response.error(res, err, 401);
         }
     }
 
@@ -55,24 +50,17 @@ class UserController {
             const { id } = req.params;
 
             if(!id){
-                throw new Error('User Id is required');
+                throw new Error("User Id is required");
             }
             if (!req.body || Object.keys(req.body).length === 0) {
                 throw new Error("Request body cannot be empty");
             }
 
             let user = await UserService.updateUser(id, req.body);
-            let status = 200;
-
-            if (!user.success) {
-                status = 400;
-            } else {
-                user.data = userResource(user.data.data);
-            }
-
-            return res.status(status).json(user);
+            
+            return Response.success(res, userResource(user.data), 'User updated successfully');
         }catch (err) {
-            res.status(400).json({ success:false , error: err.message });
+            Response.error(res, err);
         }
     }
 
@@ -80,19 +68,14 @@ class UserController {
         try {
             const { id } = req.params;
             if (!id) {
-                throw new Error('User Id is required');
+                throw new Error("User Id is required");
             }
 
             let user = await UserService.deleteUser(id);
-            let status = 200;
 
-            if (!user.success) {
-                status = 400;
-            }
-
-            return res.status(status).json(user);
+            return Response.success(res, user, 'User deleted successfully');
         } catch (err) {
-            res.status(400).json({ success:false , error: err.message });
+            Response.error(res, err);
         }
     }
 }

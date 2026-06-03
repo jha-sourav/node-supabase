@@ -1,4 +1,6 @@
-const AuthService = require('../services/AuthService');
+const AuthService = require('./auth.service');
+const userResource = require('../users/user.resource');
+const Response = require('../../shared/utils/response');
 
 class AuthController {
     async register(req, res) {
@@ -7,13 +9,10 @@ class AuthController {
                 throw new Error("Request body cannot be empty");
             }
             const user = await AuthService.register(req.body);
-            let status = 201;
-            if(!user.success){
-                status = 400;
-            }
-            return res.status(status).json(user);
+            
+            return Response.success(res, userResource(user.data), 'User registered successfully', 201);
         } catch (err) {
-            res.status(400).json({error: err.message});
+            Response.error(res, err);
         }
     }
 
@@ -23,13 +22,10 @@ class AuthController {
                 throw new Error("Request body cannot be empty");
             }
             const user = await AuthService.login(req.body);
-            let status = 200;
-             if(!user.success){
-                status = 401;
-            }
-            return res.status(status).json(user);
+            user.user = userResource(user.user);
+            return Response.success(res, user, 'User Login successfully');
         }catch (err) {
-            res.status(401).json({error: err.message});
+            Response.error(res, err, 401);
         }
     }
 }
